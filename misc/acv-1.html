@@ -1,0 +1,226 @@
+<html>
+    <!-- this version is nice for creating wallpaper -->
+    <style>
+        @font-face {
+            font-family: 'Spot';
+            src: url('spot.woff2') format('woff2');
+        }        
+        body {
+            font-family: 'Spot', 'Arial';
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+            background: black;
+        }
+        canvas {
+        background: linear-gradient(
+            to bottom,
+            rgb(0,0,0) 0%,
+            rgb(0,0,0) 100%
+        );
+        }
+        div#main {
+            position: absolute;
+            top: 15%;
+            left: 50%;
+            width: 650px;
+            margin-left: -300px;
+            text-align: center;
+        }
+        p { 
+            color: white;
+            font-size: 24px;
+        }
+        p.header {
+            font-size: 40px;
+        }
+        a {
+            color: white;
+        }
+
+        @media only screen and (max-width: 900px) {
+            div#main {
+                width: 80vw;
+                margin-left: -40vw;
+            }
+        }
+
+    </style>
+    <body>
+        <canvas></canvas>
+        <script type="text/javascript">
+            // based on a 3D effect by https://codepen.io/funxer
+            const canvas = document.querySelector('canvas');
+            const ctx = canvas.getContext('2d');
+            const layers = 8;
+            let particles = [];
+            let targets = [];
+            const lerp = (t, v0, v1) => (1 - t) * v0 + t * v1;
+            const fov = 2000;
+            const viewDistance = 75;
+            let targetRotationY = -0.2;
+            let rotationY = 0;
+            let targetRotationX = -0.9;
+            let rotationX = 0;
+            let speed = 200;
+            let animFrame;
+            let frames = 0;
+            let totalframes = 0;
+            let fps = 60;
+            let now;
+            let then = Date.now();
+            let interval = 1000/fps;
+            let delta; 
+
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            class Vector3 {
+            constructor(x, y, z) {
+                this.x = x;
+                this.y = y;
+                this.z = z;
+            }
+            
+            static fromScreenCoords(_x, _y, _z) {
+                const factor = fov / viewDistance;
+                const x = (_x - canvas.width / 2) / factor;
+                const y = (_y - canvas.height / 2) / factor;
+                const z = _z !== undefined ? _z : 0;
+                
+                return new Vector3(x, y, z);
+            }
+            
+            rotateX(angle) {
+                const z = this.z * Math.cos(angle) - this.x * Math.sin(angle);
+                const x = this.z * Math.sin(angle) + this.x * Math.cos(angle);
+                return new Vector3(x, this.y, z);  
+            }
+            rotateY(angle) {
+                const y = this.y * Math.cos(angle) - this.z * Math.sin(angle);
+                const z = this.y * Math.sin(angle) + this.z * Math.cos(angle);
+                return new Vector3(this.x, y, z);
+            }
+            pp() {
+                const factor = fov / (viewDistance + this.z);
+                const x = this.x * factor + canvas.width / 2;
+                const y = this.y * factor + canvas.height / 2;
+                return new Vector3(x, y, this.z);
+            }
+            }
+            
+            function init(e) {
+                if (e) e.preventDefault();
+                cancelAnimationFrame(animFrame);
+
+                const text = 'ekl systems';
+                let fontSize = 200;
+                let fontString = `500 ${fontSize}px Arial`;
+                let startX = canvas.width / 2;
+                let startY = 0;
+                particles = [];
+                targets = [];
+
+                const c = document.createElement('canvas');
+                const cx = c.getContext('2d');
+                cx.font = fontString;
+                let w = cx.measureText(text).width;
+                const h = fontSize * 1.5;
+                let gap = 7;
+                
+                gap = 8;
+                size = 1.75 * Math.max(gap / 2, 1);
+                c.width = w;
+                c.height = h;
+                startX = Math.floor(startX - w / 2);
+                startY = Math.floor(startY - h / 2);
+                cx.fillStyle = '#000';
+                cx.font = fontString;
+                cx.fillText(text, 0, fontSize);
+                const data = cx.getImageData(0, 0, w, h);        
+                
+                for (let i = 0; i < data.data.length; i += 4) {
+                    const rw = data.width * 4;
+                    const rh = data.height * 4;
+                    const x = startX + Math.floor((i % rw) / 4);
+                    const y = startY + Math.floor(i / rw);
+                    
+                    if (data.data[i + 3] > 0 && x % gap === 0 && y % gap === 0) {
+                        for (let j = 0; j < layers; j++) {
+                            targets.push(Vector3.fromScreenCoords(x, y, j * 1));
+                        }
+                    }
+                }
+                
+                targets = targets.sort((a, b) => a.x - b.x);
+                setTimeout(loop,1000); // start 1 second after loading
+                return false;
+            }
+            
+            function loop() {
+                now = Date.now();
+                delta = now - then;
+        
+                if (delta > interval) { // target 60fps
+                    then = now - (delta % interval);
+        
+                    //ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    totalframes++;
+                    if(frames++ > 240) {
+                            frames = 0
+                            targetRotationX = Math.random() * 2 - 1;
+                            targetRotationY = Math.random() * 2 - 1;
+                        }
+
+                    for (let i = 0; i < speed; i++) {
+                        if (targets.length > 0) {
+                            target = targets[0];
+                            x = (canvas.width / 2) + target.x * 10;
+                            y = canvas.height / 2;
+                            z = -10;
+                            const position = Vector3.fromScreenCoords(x, y, z);
+                            const interpolant = 0;
+                            particles.push({ position, target, interpolant });
+                            targets.splice(0, 1);
+                        }
+                    }
+                    
+                    particles
+                        .sort((pa, pb) => pb.target.z - pa.target.z)
+                        .forEach((p, i) => {
+                        if (p.interpolant < 1) {
+                            p.interpolant = Math.min(p.interpolant + .005, 1);
+                            p.position.x = lerp(p.interpolant, p.position.x, p.target.x);
+                            p.position.y = lerp(p.interpolant, p.position.y, p.target.y);
+                        }
+                        p.position.z = lerp(p.interpolant, p.position.z, p.target.z) + (1.1-p.interpolant)*Math.random()*2;
+                        rotationX = lerp(0.000005, rotationX, targetRotationX);
+                        rotationY = lerp(0.000005, rotationY, targetRotationY);
+                        const particle = p.position
+                        .rotateX(rotationX)
+                        .rotateY(rotationY)
+                        .pp();
+                        
+                        const s = 1 - (p.position.z / layers);
+                        ctx.fillStyle = `hsl(${20-s*240},100%,${(25+s/2*50)/10}%)`;
+                        ctx.globalCompositeOperation = 'screen';                    
+                        ctx.fillRect(particle.x * 2 - 900, particle.y * 2 + canvas.height/2, s * size / 2, s * size / 2);
+                    });
+                }
+                if(totalframes < 350) {
+                    animFrame = requestAnimationFrame(loop);
+                }
+            }
+            
+            init();
+        </script>
+        <div id="main">
+            <p class="header">
+                ACV-1
+            </p>
+            <p>
+                ACV-1 is currently offline.    
+            </p>
+        </div>
+    </body>
+</html>

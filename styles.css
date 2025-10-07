@@ -1,0 +1,34 @@
+:root {
+  color-scheme: light;
+}
+
+body {
+  background-color: #ffffff;
+  color: #111827;
+  font-family: "Work Sans", ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: "Instrument Serif", "Times New Roman", serif;
+  letter-spacing: -0.01em;
+}
+
+h2 { font-size: 20pt; }
+
+textarea {
+  resize: vertical;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
