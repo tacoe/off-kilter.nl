@@ -20,6 +20,13 @@ h3 {
   letter-spacing: -0.01em;
 }
 
+.standout {
+  background: -webkit-linear-gradient(#eee, #333);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 h2 { font-size: 20pt; }
 
 textarea {
