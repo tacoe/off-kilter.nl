@@ -13,98 +13,58 @@
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=Work+Sans:wght@400;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,400&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400..700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth@75..125&wght@300..700,400&display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="styles.css" />
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     <style type="text/tailwindcss">
       @layer base {
-        h1 {
-          @apply text-4xl sm:text-5xl md:text-6xl lg:text-7xl;
-          font-family: 'Archivo', sans-serif;
-          font-variation-settings: 'wdth' 150;
-        }
         h2 {
-          @apply text-4xl md:text-5xl lg:text-5xl;
+          @apply text-2xl md:text-3xl lg:text-5xl;
+          font-family: 'Archivo', sans-serif;
+          font-variation-settings: "wdth" 125;
+          letter-spacing: -0.05rem;
         }
-        p, ol {
-          @apply text-lg md:text-xl lg:text-xl;
+        p, ol { 
+          @apply text-lg md:text-xl lg:text-2xl;
         }
       }
     </style>
   </head>
   <body class="m-0 bg-black">
-    <header
-      class="fixed inset-x-0 top-0 z-50 bg-black backdrop-blur"
-    >
-      <div class="flex w-full items-center justify-between pl-4 pr-4 py-3 md:pr-6">
-        <a
-          href="/"
-          class="font-['Instrument_Serif'] text-xl tracking-tight text-white md:text-2xl"
-        >
-          <img
-            src="assets/LOGO on black-m.png"
-            alt="OFF-KILTER logo"
-            class="h-auto w-3/5 max-w-xs sm:max-w-sm md:max-w-md lg:max-w-xl xl:max-w-2xl"
-          />
-      </a>
+    <header class="fixed inset-x-0 top-0 z-50 bg-black backdrop-blur">
+      <div class="flex w-full items-center justify-between pl-4 pr-4 py-0">
+        <a href="/">
+          <img src="assets/LOGO on black-m.png" alt="OFF-KILTER wordmark"
+            class="h-auto w-2/5 max-w-xs sm:max-w-sm md:max-w-md lg:max-w-xl xl:max-w-2xl translate-y-0.5"/>
+        </a>
         <nav aria-label="Primary">
-          <ul class="flex items-center gap-6 text-sm text-white">
-            <!--
-            <li>
-              <a href="#">
-                ABOUT
-              </a>
-            </li>
-            -->
-            <li>
-              <a href="https://tally.so/r/mRE68p" target="_blank">
+          <ul class="flex items-center gap-6 text-sm text-white ">
+            <li><a class="text-white" href="mailto:taco.ekkel+offkilter@gmail.com">
                 CONTACT
-              </a>
-            </li>
+              </a></li>
           </ul>
         </nav>
       </div>
     </header>
-    <main class="flex min-h-screen flex-col items-center justify-center px-6 pt-32 pb-16 text-center md:px-10">
-      <div
-        class="mx-auto flex max-w-6xl flex-col items-center gap-10 text-center md:gap-12 lg:gap-14"
-        role="document"
-      >
-        <section class="text-red-600">
-          <h1>procedural audiovisuals<br/>with organic complexity</h1>
+
+    <main class="flex min-h-screen flex-col items-center justify-center px-6 pt-16 pb-16 text-center md:px-10">
+      <div class="mx-auto flex max-w-6xl flex-col items-center gap-10 text-center md:gap-12 lg:gap-14" role="document">
+        <section id="hero" class="flex flex-col items-center justify-center text-center">
+          <img
+            src="assets/MINI LOGO HERO on black.png" alt="OFF-KILTER logo"
+            class="max-w-xs sm:max-w-xs md:max-w-s lg:max-w-s xl:max-w-s"/>
+          <h2 class="text-red-600">procedural audiovisuals<br/>
+              with organic complexity</h2>
         </section>
-        <section class="space-y-6 pt-10 md:pt-12 text-slate-500">
-          <p>
+        <section>
+          <p class="text-slate-500">
             OFF-KILTER designs and codes realtime animation and sound that feel alive.
-            <br/> 
-            We pursue imperfection through precision and craftmanship,  
-            <br/>
+            We pursue imperfection through precision and craftmanship, 
             interconnecting the senses, 
-            <br/>
             instilling emotion.
           </p>
         </section>
-
-        <!--
-        <section class="space-y-8 pt-10 md:pt-12">
-          <div class="space-y-2">
-            <h2>
-              Get in touch
-            </h2>
-          </div>
-          <div class="space-y-2">
-            <iframe data-tally-src="https://tally.so/embed/m6ap0Y?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" loading="lazy" width="100%" height="319" frameborder="0" marginheight="0" marginwidth="0" title="Get in touch"></iframe>
-            <script>var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=typeof Tally?Tally.loadEmbeds():d.querySelectorAll("iframe[data-tally-src]:not([src])").forEach((function(e){e.src=e.dataset.tallySrc}))};if("undefined"!=typeof Tally)v();else if(d.querySelector('script[src="'+w+'"]')==null){var s=d.createElement("script");s.src=w,s.onload=v,s.onerror=v,d.body.appendChild(s);}</script>
-          </div>
-        </section>
-        -->
       </div>
     </main>
   </body>

@@ -3,21 +3,11 @@
 }
 
 body {
-background: #000000;
-background: linear-gradient(180deg, rgba(0, 0, 0, 1) 37%, rgba(33, 0, 26, 1) 84%, rgba(64, 0, 17, 1) 100%);
-
+  background: linear-gradient(180deg, rgba(0, 0, 0, 1) 37%, rgba(33, 0, 26, 1) 84%, rgba(64, 0, 17, 1) 100%);
   color: #111827;
-  font-family: "Work Sans", ui-sans-serif, system-ui, -apple-system,
-    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "Work Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-}
-
-h1,
-h2,
-h3 {
-  font-family: "Instrument Serif", "Times New Roman", serif;
-  letter-spacing: -0.01em;
 }
 
 .standout {
