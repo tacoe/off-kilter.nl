@@ -19,8 +19,8 @@
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     <style type="text/tailwindcss">
       @layer base {
-        h2 {
-          @apply text-2xl md:text-3xl lg:text-5xl;
+        h1 {
+          @apply text-3xl sm:text-4xl md:text-5xl lg:text-7xl;
           font-family: 'Archivo', sans-serif;
           font-variation-settings: "wdth" 125;
           letter-spacing: -0.05rem;
@@ -48,14 +48,11 @@
       </div>
     </header>
 
-    <main class="flex min-h-screen flex-col items-center justify-center px-6 pt-16 pb-16 text-center md:px-10">
+    <main class="flex min-h-screen flex-col items-center justify-center px-6 pt-16 pb-0 text-center md:px-10">
       <div class="mx-auto flex max-w-6xl flex-col items-center gap-10 text-center md:gap-12 lg:gap-14" role="document">
         <section id="hero" class="flex flex-col items-center justify-center text-center">
-          <img
-            src="assets/MINI LOGO HERO on black.png" alt="OFF-KILTER logo"
-            class="max-w-xs sm:max-w-xs md:max-w-s lg:max-w-s xl:max-w-s"/>
-          <h2 class="text-red-600">procedural audiovisuals<br/>
-              with organic complexity</h2>
+          <h1 class="text-red-600">procedural audiovisuals<br/>
+              with organic complexity</h1>
         </section>
         <section>
           <p class="text-slate-500">
@@ -64,6 +61,11 @@
             interconnecting the senses, 
             instilling emotion.
           </p>
+        </section>
+        <section class="flex flex-col items-center justify-center text-center">
+          <img
+            src="assets/ICON 2 on black.png" alt="OFF-KILTER logo"
+              class="w-2/5 md:w-3/5 lg:w-4/5"/>
         </section>
       </div>
     </main>
