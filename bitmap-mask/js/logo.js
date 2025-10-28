@@ -1,9 +1,5 @@
 const canvas = document.getElementById("logo-canvas");
-const gl = canvas.getContext("webgl");
-
-if (!gl) {
-  throw new Error("WebGL not supported in this browser");
-}
+const gl = canvas.getContext("webgl2");
 
 const vertexShaderSource = `
 attribute vec2 a_position;

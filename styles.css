@@ -8,6 +8,23 @@ body {
   font-family: "Work Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  position: relative;
+  isolation: isolate;
+}
+
+/* Subtle multi-color glow framing the viewport */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -8vw;
+  background:
+    radial-gradient(45vw 45vw at top left, rgba(255, 77, 196, 0.3), transparent 70%),
+    radial-gradient(45vw 45vw at top right, rgba(86, 139, 255, 0.28), transparent 70%),
+    radial-gradient(55vw 55vw at bottom center, rgba(255, 120, 74, 0.22), transparent 75%);
+  filter: blur(40px);
+  opacity: 0.8;
+  pointer-events: none;
+  z-index: -1;
 }
 
 .standout {
