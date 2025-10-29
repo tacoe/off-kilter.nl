@@ -2,6 +2,7 @@
   color-scheme: light;
 }
 
+/* border glow approach by @anatudor */
 @property --a {
 	syntax: '<angle>';
 	initial-value: 0deg;
@@ -23,7 +24,6 @@ body {
 body::before {
   content: "";
   position: fixed;
-  inset: -8vw;
   background:
     radial-gradient(45vw 45vw at top left, rgba(255, 77, 196, 0.3), transparent 70%),
     radial-gradient(45vw 45vw at top right, rgba(86, 139, 255, 0.28), transparent 70%),
@@ -35,8 +35,12 @@ body::before {
   inset: -3vw;
 	border: solid 4vw;
 	border-image: 
-		conic-gradient(from var(--a), rgba(255, 77, 196, 0.3), rgba(86, 139, 255, 0.28), rgba(0, 200, 74, 0.62),  rgba(255, 77, 196, 0.3)) 1;
-	filter: blur(3vw);
+		conic-gradient(from var(--a),
+     rgba(255,  77, 196, 0.2),
+     rgba( 86, 139, 255, 0.15), 
+     rgba(  0, 200,  74, 0.4),  
+     rgba(255,  77, 196, 0.2)) 1;
+	filter: blur(5vw);
 	animation: a 18s linear infinite;
 }
 
