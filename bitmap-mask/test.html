@@ -1,0 +1,153 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Plane + 50-tap blur</title></head>
+<body style="margin:0;background:#111;display:grid;place-items:center;height:100vh">
+<canvas id="gl" width="400" height="400" style="width:400px;height:400px;display:block"></canvas>
+<script>
+const canvas = document.getElementById('gl');
+const gl = canvas.getContext('webgl2');
+if (!gl) throw new Error('WebGL2 required');
+
+const vs = `#version 300 es
+    precision highp float;
+    in vec2 a_pos;  // [-1,1] quad
+    in vec2 a_uv;   // [0,1] uv
+    out vec2 v_uv;
+    uniform float u_scale; // 0..1 (0.5 = 50% size)
+    void main(){
+    v_uv = a_uv;
+    vec2 p = a_pos * u_scale;
+    gl_Position = vec4(p, 0.0, 1.0);
+}`;
+
+const fs = `#version 300 es
+precision highp float;
+in vec2 v_uv;
+out vec4 fragColor;
+uniform sampler2D u_tex;
+uniform vec2  u_texel;   // 1 / texture size
+uniform float u_radius;  // blur radius in pixels (σ ≈ radius/3)
+void main(){
+  vec4  sum = vec4(0.0);
+  float total = 0.0;
+  const int N = 400;              // taps
+  const float GA = 2.39996323;   // golden angle
+  float sigma = u_radius * 0.3333;
+  float twoSigma2 = 2.0 * sigma * sigma;
+
+  for (int i=0; i<N; ++i) {
+    float fi = float(i);
+    float t = (fi+0.5) / float(N);
+    float r = sqrt(t) * u_radius;        // denser center
+    float a = GA * fi;
+    vec2 dir = vec2(cos(a), sin(a));
+    vec2 off = dir * r * u_texel;
+    float w = exp(-r*r / twoSigma2);     // Gaussian weight
+    sum += texture(u_tex, v_uv + off) * w;
+    total += w;
+  }
+  fragColor = sum / total;
+}`;
+
+
+function compile(type, src) {
+  const sh = gl.createShader(type);
+  gl.shaderSource(sh, src);
+  gl.compileShader(sh);
+  if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS))
+    throw new Error(gl.getShaderInfoLog(sh));
+  return sh;
+}
+
+const prog = gl.createProgram();
+gl.attachShader(prog, compile(gl.VERTEX_SHADER, vs));
+gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fs));
+gl.linkProgram(prog);
+if (!gl.getProgramParameter(prog, gl.LINK_STATUS))
+  throw new Error(gl.getProgramInfoLog(prog));
+gl.useProgram(prog);
+
+// Fullscreen quad (we scale it in the vertex shader)
+const quad = new Float32Array([
+  //  pos.x pos.y   u  v
+  -1,-1,   0,0,
+   1,-1,   1,0,
+  -1, 1,   0,1,
+  -1, 1,   0,1,
+   1,-1,   1,0,
+   1, 1,   1,1,
+]);
+const vao = gl.createVertexArray();
+gl.bindVertexArray(vao);
+const vbo = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+gl.bufferData(gl.ARRAY_BUFFER, quad, gl.STATIC_DRAW);
+
+const loc_pos = gl.getAttribLocation(prog, 'a_pos');
+const loc_uv  = gl.getAttribLocation(prog, 'a_uv');
+gl.enableVertexAttribArray(loc_pos);
+gl.vertexAttribPointer(loc_pos, 2, gl.FLOAT, false, 16, 0);
+gl.enableVertexAttribArray(loc_uv);
+gl.vertexAttribPointer(loc_uv,  2, gl.FLOAT, false, 16, 8);
+
+// Uniforms
+const u_scale  = gl.getUniformLocation(prog, 'u_scale');
+const u_texel  = gl.getUniformLocation(prog, 'u_texel');
+const u_radius = gl.getUniformLocation(prog, 'u_radius');
+const u_tex    = gl.getUniformLocation(prog, 'u_tex');
+
+// Texture (inline SVG → data URL)
+const svg = `
+<svg width="501px" height="325px" viewBox="0 0 501 325" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <defs><path d="M0,0 L500,0 L500,325 L0,325 L0,0 Z" id="path-1"></path></defs>
+    <g id="Frame" stroke="none" fill="none" transform="translate(1, 0)" xlink:href="#path-1" fill-rule="nonzero">
+        <path d="M495.34335,102.925117 C487.764756,44.1107644 437.746035,0 378.633001,0 L120.455564,0 C61.3425298,0 11.323809,44.1107644 3.74521489,102.925117 C-1.81242076,142.472699 -1.81242076,182.527301 3.74521489,222.074883 C11.323809,280.889236 61.3425298,325 120.455564,325 L378.633001,325 C438.251275,325 488.269996,280.889236 495.84859,221.567863 C500.900986,182.527301 500.900986,142.472699 495.34335,102.925117 Z M363.475813,200.780031 C359.433896,221.567863 341.245271,236.271451 320.025207,236.271451 C281.626997,236.271451 217.461568,236.271451 179.063358,236.271451 C157.843294,236.271451 139.654669,221.567863 135.612752,200.780031 C130.560356,175.429017 130.055116,149.570983 135.612752,124.219969 C139.654669,103.432137 157.843294,88.7285491 178.558118,88.7285491 C217.461568,88.7285491 281.626997,88.7285491 320.025207,88.7285491 C341.245271,88.7285491 359.433896,103.432137 363.475813,124.219969 C368.528209,149.570983 368.528209,175.429017 363.475813,200.780031 Z" id="Shape" fill="color(display-p3 1.000 1.000 1.000)" style="mix-blend-mode: lighten;"></path>
+    </g>
+</svg>`;
+const img = new Image();
+img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+
+const tex = gl.createTexture();
+gl.activeTexture(gl.TEXTURE0);
+gl.bindTexture(gl.TEXTURE_2D, tex);
+// Temp 1x1 while loading
+gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1,1,0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0,0,0,255]));
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+gl.uniform1i(u_tex, 0);        // sampler → texture unit 0
+gl.uniform1f(u_radius, 50.0);   // blur radius in pixels (tweak)
+gl.uniform1f(u_scale, 0.5);    // 0.5 = 50% size (centered)
+
+// Draw
+function draw() {
+  gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+  gl.clearColor(0.07,0.07,0.07,1);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.bindVertexArray(vao);
+  gl.drawArrays(gl.TRIANGLES, 0, 6);
+}
+
+img.onload = () => {
+  gl.bindTexture(gl.TEXTURE_2D, tex);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+  // NPOT okay in WebGL2; keep CLAMP+LINEAR, no mipmaps for crisp blur
+  gl.uniform2f(u_texel, 1.0 / img.width, 1.0 / img.height);
+  draw();
+};
+
+// Handle resize (optional; keeps internal buffer matching CSS size)
+function resize() {
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  if (canvas.width !== w || canvas.height !== h) {
+    canvas.width = w; canvas.height = h;
+    draw();
+  }
+}
+addEventListener('resize', resize);
+</script>
+</body>
+</html>

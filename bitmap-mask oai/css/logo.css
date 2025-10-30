@@ -1,0 +1,18 @@
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+#logo-canvas {
+  display: block;
+  width: 400px;
+  height: 400px;
+}
