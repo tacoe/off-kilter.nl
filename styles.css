@@ -18,18 +18,17 @@ body {
   -webkit-font-smoothing: antialiased;
   position: relative;
   isolation: isolate;
-	background-blend-mode: multiply;
+	background-blend-mode: screen;
 }
 
 body::before {
   content: "";
   position: fixed;
   background:
-    radial-gradient(45vw 45vw at top left, rgba(255, 77, 196, 0.3), transparent 70%),
-    radial-gradient(45vw 45vw at top right, rgba(86, 139, 255, 0.28), transparent 70%),
-    radial-gradient(55vw 55vw at bottom center, rgba(255, 120, 74, 0.22), transparent 75%);
-  background: none;
-  opacity: 0.8;
+    radial-gradient(45vw 45vw at top left, rgba(255, 77, 196, 0.1), transparent 80%),
+    radial-gradient(45vw 45vw at top right, rgba(86, 139, 255, 0.1), transparent 80%),
+    radial-gradient(55vw 55vw at bottom center, rgba(255, 120, 74, 0.1), transparent 80%);
+  opacity: 1;
   pointer-events: none;
   z-index: -2;
 
@@ -49,7 +48,7 @@ body::before {
 
 #secondlayer {
   background: none;
-	background-blend-mode: multiply;
+	background-blend-mode: screen;
   width: 100vw;
   height: 100vh;
   position: absolute;
@@ -68,7 +67,7 @@ body::before {
      rgba(255,  255, 0, .2 ),
      rgba(0,  0, 0, 0 ),
      rgba(0,255, 255, .2)) 1;
-	filter: blur(10vw);
+	filter: blur(8vw);
 	animation: a 13s linear infinite;
 }
 
