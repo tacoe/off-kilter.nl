@@ -45,7 +45,7 @@
         </a>
         <nav aria-label="Primary">
           <ul class="flex items-center gap-6 text-sm text-white ">
-            <li><a class="text-white" href="mailto:taco.ekkel+offkilter@gmail.com">
+            <li><a id="contact-email" class="text-white" href="#">
                 CONTACT
               </a></li>
           </ul>
@@ -74,5 +74,13 @@
         </section>
       </div>
     </main>
+  <script>
+    (function () {
+      var link = document.getElementById('contact-email');
+      if (!link) return;
+      var address = ['taco', '.', 'ekkel', '+offkilter', String.fromCharCode(64), 'gmail', '.', 'com'].join('');
+      link.setAttribute('href', 'mailto:' + address);
+    })();
+  </script>
   </body>
 </html>
