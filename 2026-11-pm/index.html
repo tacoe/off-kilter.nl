@@ -1,0 +1,508 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Room From Photos</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+
+<!--
+Search for "EDIT ▸" to jump between text blocks
+-->
+
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #07070b; --panel: #101018; --line: #24242f; --fg: #eeeef4; --dim: #9a9aae;
+  --green: #35ff4a; --magenta: #ff2bb8; --violet: #8a3dff; --cyan: #86fff2;
+  --display: "Rugen", "Arial Black", "Helvetica Neue", sans-serif;
+  --body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 15px/1.55 var(--body); }
+.wrap { max-width: 1120px; margin: 0 auto; padding-block: 28px 80px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+img { display: block; }
+header { display: flex; flex-direction: column; gap: 22px; padding-bottom: 28px; }
+header img { width: 220px; height: auto; }
+h1 { font: 400 clamp(22px, 4.2vw, 26px)/1.12 var(--display); margin: 0; letter-spacing: .01em; text-wrap: balance; }
+.sub { font: 12px/1.5 var(--mono); color: var(--dim); letter-spacing: .06em; text-transform: uppercase; }
+.rule { height: 2px; border: 0; margin: 0; background: linear-gradient(90deg, var(--green), var(--cyan) 30%, var(--violet) 62%, var(--magenta)); }
+h2 { font: 400 clamp(15px, 2.2vw, 20px)/1.25 var(--display); margin: 0; letter-spacing: .02em; text-wrap: balance; }
+h3 { font: 600 14px/1.3 var(--body); margin: 0; }
+p { margin: 0; color: var(--dim); }
+p b, li b { color: var(--fg); font-weight: 500; }
+section { padding-top: 56px; display: flex; flex-direction: column; gap: 18px; }
+.eyebrow { font: 11px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--magenta); }
+.goal { font-size: 17px; line-height: 1.5; color: var(--fg); }
+
+/* compare viewer */
+.viewer { display: flex; flex-direction: column; gap: 12px; }
+.bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button.t { font: 12px/1 var(--mono); letter-spacing: .04em; color: var(--dim); background: transparent; border: 1px solid var(--line);
+  padding: 9px 12px; border-radius: 2px; cursor: pointer; }
+button.t:hover { color: var(--fg); border-color: var(--dim); }
+button.t[aria-pressed="true"] { color: var(--bg); background: var(--green); border-color: var(--green); }
+button.t:focus-visible, button.th:focus-visible, .seg button:focus-visible, input[type=range]:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.cmp { position: relative; aspect-ratio: 4 / 3; max-width: 100%; background: var(--panel); overflow: hidden; border: 1px solid var(--line); }
+.cmp img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.cmp .top { clip-path: inset(0 calc(100% - var(--p, 50%)) 0 0); }
+.cmp .bar-v { position: absolute; top: 0; bottom: 0; left: var(--p, 50%); width: 2px; margin-left: -1px; background: var(--green); pointer-events: none; }
+.cmp .bar-v::after { content: "‹ ›"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font: 12px/1 var(--mono); letter-spacing: .1em;
+  padding: 7px 6px; background: var(--green); color: var(--bg); border-radius: 2px; white-space: nowrap; }
+.cmp .tag { position: absolute; top: 10px; font: 11px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; padding: 6px 8px; background: rgba(7,7,11,.78); color: var(--fg); pointer-events: none; }
+.cmp .tag.l { left: 10px; } .cmp .tag.r { right: 10px; }
+.cmp input[type=range] { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: ew-resize; z-index: 1; }
+/* layer toggle sitting on the image */
+.seg { position: absolute; z-index: 2; left: 50%; bottom: 12px; transform: translateX(-50%); display: flex; max-width: calc(100% - 20px);
+  background: rgba(7,7,11,.62); border: 1px solid rgba(238,238,244,.28); border-radius: 3px; padding: 3px; gap: 3px;
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.seg button { font: 11px/1 var(--mono); letter-spacing: .04em; color: var(--fg); background: transparent; border: 0; padding: 8px 10px; border-radius: 2px; cursor: pointer; white-space: nowrap; }
+.seg button:hover { background: rgba(238,238,244,.14); }
+.seg button[aria-pressed="true"] { background: var(--green); color: var(--bg); }
+.lbl { font: 11px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--magenta); min-width: 64px; }
+.thumbs { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+button.th { padding: 0; background: transparent; border: 1px solid var(--line); border-radius: 2px; cursor: pointer; display: flex; flex-direction: column; color: var(--dim); min-width: 0; }
+button.th img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; opacity: .55; }
+button.th span { font: 11px/1.2 var(--mono); padding: 6px 4px; letter-spacing: .03em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+button.th:hover img { opacity: .85; } button.th:hover { color: var(--fg); border-color: var(--dim); }
+button.th[aria-pressed="true"] { border-color: var(--green); color: var(--green); }
+button.th[aria-pressed="true"] img { opacity: 1; }
+
+/* figures and grids */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+.stats div { background: var(--bg); padding: 16px 14px; display: flex; flex-direction: column; gap: 6px; }
+.stats b { font: 400 22px/1 var(--display); font-variant-numeric: tabular-nums; }
+.stats span { font: 11px/1.3 var(--mono); color: var(--dim); letter-spacing: .05em; text-transform: uppercase; }
+.steps { display: flex; flex-direction: column; }
+.step { display: grid; grid-template-columns: 64px minmax(0, 1fr) minmax(0, 1.25fr); gap: 20px; padding-block: 28px; border-top: 1px solid var(--line); align-items: start; }
+.step .n { font: 400 22px/1 var(--display); color: var(--green); font-variant-numeric: tabular-nums; }
+.step .txt { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.step .vis { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.step img, .pair img, .sw img { width: 100%; height: auto; border: 1px solid var(--line); }
+.cap { font: 11px/1.4 var(--mono); color: var(--dim); letter-spacing: .03em; }
+.strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.strip img { aspect-ratio: 4/3; object-fit: cover; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 0; margin: 0; list-style: none; }
+.chips li { font: 11px/1.2 var(--mono); padding: 6px 8px; border: 1px solid var(--line); color: var(--fg); }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 40px; align-items: start; }
+.two > div { display: flex; flex-direction: column; gap: 10px; }
+.two ul.plain { max-width: none; gap: 8px; }
+ul.plain { margin: 0; padding-left: 18px; color: var(--dim); display: flex; flex-direction: column; gap: 4px; max-width: 62ch; }
+.tbl { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 9px 12px 9px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 11px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--dim); font-weight: 400; }
+td:first-child { color: var(--dim); white-space: nowrap; }
+td.num { font-family: var(--mono); white-space: nowrap; }
+.tree { font: 12px/1.75 var(--mono); color: var(--dim); background: var(--panel); border: 1px solid var(--line); padding: 14px 16px; overflow-x: auto; white-space: pre; margin: 0; }
+.tree b { color: var(--fg); font-weight: 500; } .tree i { color: var(--green); font-style: normal; }
+.pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.pair figure, .sw figure { margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.sw { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.sw img { aspect-ratio: 4/3; object-fit: cover; }
+.note { border-left: 2px solid var(--violet); padding-left: 12px; font-size: 13px; }
+footer { padding-top: 56px; display: flex; gap: 14px; align-items: center; color: var(--dim); font: 11px/1.4 var(--mono); letter-spacing: .05em; }
+footer img { width: 34px; height: auto; }
+@media (max-width: 760px) {
+  .two { grid-template-columns: 1fr; }
+  .step { grid-template-columns: 44px minmax(0, 1fr); }
+  .step .vis { grid-column: 2; }
+  .sw { grid-template-columns: 1fr; } .pair { grid-template-columns: 1fr; }
+  .thumbs { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .seg button { padding: 7px 6px; font-size: 10px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+
+
+
+<!-- ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  EDIT ▸ HEADER: TITLE, SUBTITLE, GOAL  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ -->
+<header>
+  <img src="img/logo.png" alt="OFF-KILTER">
+
+  <h1>Fast photo-matched parametric modeling</h1>
+
+  <div class="sub">OFF-KILTER® research lab / November 2026</div>
+
+  <p class="goal">
+    Goal: Build a 3D room model in near-real-time from just a few reference photos, but 
+    still with clean topology and light/materialization realistic enough for lighting studies.
+  </p>
+
+  <!-- Two columns: Approach (left) and Findings (right). They stack on narrow screens. -->
+  <div class="two">
+
+    <div>
+      <p class="goal">Approach:</p>
+      <ul class="plain">
+      <li>
+        Solve room layout, placement, dimensions and lighting using a limited set of 
+        reference photos and the brand/model of a few items that have published dimensions.
+      </li>
+      <li>
+        Use the solved layout to generate a parametric 3D model with clean topology and 
+        place cameras that match reference photos. Decorative objects were purposefully kept simplistic, with more focus
+        on volumes, light, materials.
+      </li>
+      <li>
+        Analyze those same reference photos for light and material properties. Then materialize
+        with strict rules: no photo textures, only single-color physically based materials or 
+        a limited set of procedural (code-generated) materials, IES light profiles, and
+        measured daylight.
+      </li>
+      <li>
+        Create the model in code so the model can be re-generated with different parameters 
+        and logic — specifically, different lighting scenarios. 
+        Then simply run the code to create the geometry and objects, then render camera views.
+      </li>
+      </ul>
+    </div>
+
+    <div>
+      <p class="goal">Findings:</p>
+      <ul class="plain">
+      <li>84 minutes of generation time, about half AI processing and half Blender rendering (MacBook Pro w/ M4 Pro, GPU-accelerated rendering); about €15 in AI token cost</li>
+      <li>Surprisingly good: light matching, procedural materials, mesh topology, overall dimensional precision and stability, world understanding (e.g. object naming)</li>
+      <li>Surprisingly bad: angular estimation, e.g. incorrect vertical angles on pillow placement, complex see-through materials (e.g. dinner lamps)</li>
+      </ul>
+    </div>
+
+  </div>
+</header>
+
+<hr class="rule">
+
+<!-- ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  EDIT ▸ COMPARE VIEWER: HINT, BUTTONS, NUMBERS  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ -->
+<section style="padding-top:28px">
+  <div class="viewer">
+
+    <div class="cmp" id="cmp" style="--p:50%">
+      <img id="imgR" src="img/render_22.jpg" alt="Right layer">
+      <img id="imgL" class="top" src="img/photo_22.jpg" alt="Left layer">
+      <div class="bar-v"></div>
+      <span class="tag l" id="tagL">Photo</span><span class="tag r" id="tagR">Render</span>
+      <input type="range" id="cmpRange" min="0" max="100" value="50" aria-label="Comparison position">
+      <div class="seg" role="group" aria-label="Layers to compare">
+        <button id="m-pr" data-mode="photo,render" aria-pressed="true">Photo | Render</button>
+        <button id="m-rw" data-mode="render,wire" aria-pressed="false">Render | Wire</button>
+        <button id="m-pw" data-mode="photo,wire" aria-pressed="false">Photo | Wire</button>
+      </div>
+    </div>
+
+    <div class="bar"><span class="lbl">View</span></div>
+    <div class="thumbs" role="group" aria-label="Camera view" id="views"></div>
+  </div>
+
+  <div class="stats">
+    <div><b>7</b><span>input photos</span></div>
+    <div><b>7</b><span>matched cameras</span></div>
+    <div><b>970</b><span>objects</span></div>
+    <div><b>278k</b><span>polygons*</span></div>
+    <div><b>125</b><span>materials</span></div>
+    <div><b>0</b><span>image textures</span></div>
+    <div><b>8</b><span>luminaires</span></div>
+  </div>
+
+  <div class="cap">* evaluated mesh faces, excluding rug and sheepskin strands and the outside backdrop.</div>
+</section>
+
+
+
+<!-- ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  EDIT ▸ PROCESS: SECTION HEADING  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ -->
+<section>
+  <div class="eyebrow">Process</div>
+
+  <h2>From input to output</h2>
+
+  <div class="steps">
+
+
+    <!-- ▓▓▓▓▓▓▓▓▓▓  EDIT ▸ STEP 01 · INPUTS  ▓▓▓▓▓▓▓▓▓▓ -->
+    <div class="step"><div class="n">01</div>
+      <div class="txt">
+
+        <h3>Inputs</h3>
+
+        <p>Seven phone photos, a basic floor plan, a list of known products and a few hard measurements.</p>
+
+        <ul class="chips">
+          <li>ceiling 3.10 m</li>
+          <li>cupboard 3650 × 960 mm</li>
+          <li>counter 65 cm deep, 98 cm high</li>
+          <li>TV 755 × 480 mm</li>
+          <li>14 named products</li>
+        </ul>
+
+        <p>Goal: a relightable scene for testing a light plan. Light quality first, then surfaces, then object detail.</p>
+
+      </div>
+      <div class="vis"><div class="strip">
+        <img src="img/photo_19.jpg" alt="Input photo, kitchen" loading="lazy"><img src="img/photo_20.jpg" alt="Input photo, door wall" loading="lazy">
+        <img src="img/photo_21.jpg" alt="Input photo, TV wall" loading="lazy"><img src="img/photo_22.jpg" alt="Input photo, window" loading="lazy">
+        <img src="img/photo_23.jpg" alt="Input photo, dining" loading="lazy"><img src="img/photo_24.jpg" alt="Input photo, dining and kitchen" loading="lazy">
+        <img src="img/photo_25.jpg" alt="Input photo, table" loading="lazy"><img src="img/floorplan.png" alt="Floor plan" loading="lazy" style="background:#fff">
+      </div></div>
+    </div>
+
+
+    <!-- ▓▓▓▓▓▓▓▓▓▓  EDIT ▸ STEP 02 · LOOK UP REAL DIMENSIONS  ▓▓▓▓▓▓▓▓▓▓ -->
+    <div class="step"><div class="n">02</div>
+      <div class="txt">
+
+        <h3>Look up real dimensions</h3>
+
+        <p>A few 'known' objects can be looked up (by AI) to retrieve precise dimensions, providing scale for the scene.</p>
+
+      </div>
+      <div class="vis tbl"><table>
+        <tr><th>Product</th><th>W × D × H, cm</th></tr>
+        <tr><td>HAY Mags Soft Low 2.5</td><td class="num">238 × 103.5 × 67</td></tr>
+        <tr><td>Vitra Slow Chair</td><td class="num">95 × 93 × 89</td></tr>
+        <tr><td>Carl Hansen CH24</td><td class="num">55 × 51 × 76</td></tr>
+        <tr><td>Roland FP-30</td><td class="num">130 × 28.4</td></tr>
+        <tr><td>La Marzocco Linea Micra</td><td class="num">29 × 39 × 34</td></tr>
+        <tr><td>Tom Dixon Beat Wide</td><td class="num">Ø 36 × 16</td></tr>
+        <tr><td>Iittala Putki</td><td class="num">Ø 20.5 × 34</td></tr>
+      </table></div>
+    </div>
+
+
+    <!-- ▓▓▓▓▓▓▓▓▓▓  EDIT ▸ STEP 03 · READ REFERENCE POINTS  ▓▓▓▓▓▓▓▓▓▓ -->
+    <div class="step"><div class="n">03</div>
+      <div class="txt">
+
+        <h3>Read reference points off the photos</h3>
+
+        <p>A pixel grid over each photo; about 60 points and edges are picked where the 3D position is already known, e.g. ceiling corners, door frame, cupboard ends.</p>
+
+      </div>
+      <div class="vis"><img src="img/grid_20.jpg" alt="Photo with pixel grid" loading="lazy">
+        <div class="cap">Photo 2 with measuring grid, 50 px steps</div>
+      </div>
+    </div>
+
+
+    <!-- ▓▓▓▓▓▓▓▓▓▓  EDIT ▸ STEP 04 · SOLVE CAMERAS AND LAYOUT  ▓▓▓▓▓▓▓▓▓▓ -->
+    <div class="step"><div class="n">04</div>
+      <div class="txt">
+
+        <h3>Solve cameras and layout together</h3>
+
+        <p>A least-squares solve finds the seven camera poses and twelve unknown positions. Mean error about <b>6 px</b> at 1800 px width.</p>
+
+      </div>
+      <div class="vis"><img src="img/overlay_22.jpg" alt="Solved room outline over photo" loading="lazy"><img src="img/overlay_19.jpg" alt="Solved kitchen boxes over photo" loading="lazy">
+      </div>
+    </div>
+
+
+    <!-- ▓▓▓▓▓▓▓▓▓▓  EDIT ▸ STEP 05 · PLACE BY RAY-CASTING  ▓▓▓▓▓▓▓▓▓▓ -->
+    <div class="step"><div class="n">05</div>
+      <div class="txt">
+
+        <h3>Place everything else by ray-casting</h3>
+
+        <p>With cameras solved, ray casting is used to solve other anchor points.</p>
+        <p>Then, points seen from two or more photos are cross-checked.</p>
+
+      </div>
+      <div class="vis"><img src="img/overlay_23.jpg" alt="Overlay on dining view" loading="lazy"></div>
+    </div>
+
+
+    <!-- ▓▓▓▓▓▓▓▓▓▓  EDIT ▸ STEP 06 · BUILD FROM CODE  ▓▓▓▓▓▓▓▓▓▓ -->
+    <div class="step"><div class="n">06</div>
+      <div class="txt">
+
+        <h3>Build the scene from code</h3>
+
+        <p>Python code. Every object is generated with actual dimensions, bevelled edges, name, etc. The whole scene is re-built in a few seconds.</p>
+
+      </div>
+      <div class="vis"><pre class="tree"><b>Room</b>        <i>151</i>  shell · window wall · door · baseboards · curtains
+<b>Kitchen</b>     <i>221</i>  tall unit · counters · wall items · appliances
+<b>Furniture</b>   <i>344</i>  built-in oak · cupboard · table · sofa · chairs · piano
+<b>Lighting</b>     <i>78</i>  one collection per luminaire, fixture + source
+<b>Decor</b>       <i>169</i>  plants · objects on cupboard and cabinet
+<b>Cameras</b>       <i>7</i>  one per input photo</pre></div>
+    </div>
+
+
+    <!-- ▓▓▓▓▓▓▓▓▓▓  EDIT ▸ STEP 07 · LIGHT IT  ▓▓▓▓▓▓▓▓▓▓ -->
+    <div class="step"><div class="n">07</div>
+      <div class="txt">
+
+        <h3>Lighting</h3>
+
+        <p>Sky and sun set to the photo time (sun 12° above the horizon). Each lamp is a fixture plus a source with a lumen value and a generated IES beam profile.</p>
+        <p>Measured in the renderer: IES data renders at about 178 lm per watt; daylight is scaled to match.</p>
+
+      </div>
+      <div class="vis tbl"><table>
+        <tr><th>Luminaire</th><th>Source</th></tr>
+        <tr><td>Starglass pendants × 2</td><td class="num">345 lm spot, 36°</td></tr>
+        <tr><td>Beat Wide pendant</td><td class="num">400 lm</td></tr>
+        <tr><td>Kitchen wall up/down</td><td class="num">2 × 470 lm, dimmed</td></tr>
+        <tr><td>Strip on tall unit</td><td class="num">500 lm</td></tr>
+        <tr><td>Putki table lamp</td><td class="num">250 lm</td></tr>
+        <tr><td>Gooseneck</td><td class="num">180 lm</td></tr>
+        <tr><td>Floor lamp, desk lamp</td><td class="num">off, as photographed</td></tr>
+      </table></div>
+    </div>
+
+
+    <!-- ▓▓▓▓▓▓▓▓▓▓  EDIT ▸ STEP 08 · RENDER, COMPARE, CORRECT  ▓▓▓▓▓▓▓▓▓▓ -->
+    <div class="step"><div class="n">08</div>
+      <div class="txt">
+
+        <h3>Render, compare, correct</h3>
+
+        <p>Each render uses the solved camera of its photo, so differences show directly. About 10 s for a preview, 2 min for a 2000 px frame on the GPU.</p>
+
+        <p>The first render crashed on a corrupt GPU shader cache. After a cache reset, renders run in a separate background process.</p>
+
+        <p>A review pass then applied 18 corrections, all as script changes.</p>
+
+      </div>
+      <div class="vis"><div class="pair">
+        <figure><img src="img/photo_23.jpg" alt="Photo" loading="lazy"><figcaption class="cap">Photo</figcaption></figure>
+        <figure><img src="img/render_23.jpg" alt="Render" loading="lazy"><figcaption class="cap">Render, same camera</figcaption></figure>
+      </div></div>
+    </div>
+
+  </div>
+</section>
+
+
+
+<!-- ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  EDIT ▸ MESH COMPARISON: TEXT, BUTTONS, TABLE  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ -->
+<section>
+  <div class="eyebrow">Mesh</div>
+
+  <h2>Modelled mesh vs reconstructed mesh</h2>
+
+  <p>Our approach creates clean topology as opposed to scans that tend to generate bad geometry that cannot be cleaned up effectively. See below for a simulated comparison.</p>
+
+  <div class="viewer">
+    <div class="bar" role="group" aria-label="Mesh view">
+      <button class="t" data-mesh="chair_wire" aria-pressed="true">Modelled · 9,378 polygons</button>
+      <button class="t" data-mesh="chair_scan" aria-pressed="false">Scanned · 58,851 triangles</button>
+      <button class="t" data-mesh="chair_shaded" aria-pressed="false">Rendered</button>
+    </div>
+    <div class="cmp" style="aspect-ratio: 4 / 3"><img id="meshImg" src="img/chair_wire.jpg" alt="Wireframe of chair and table"></div>
+  </div>
+
+  <div class="tbl"><table>
+    <tr><th></th>                  <th>Modelled from photos</th>                              <th>Scan mesh / photogrammetry</th>                       <th>Gaussian splat</th></tr>
+    <tr><td>Geometry</td>          <td>Separate named objects, edges follow the form</td>     <td>One fused triangle surface</td>                       <td>No mesh; millions of coloured blobs</td></tr>
+    <tr><td>Unseen sides</td>      <td>Modelled from known dimensions</td>                    <td>Holes or guessed fill</td>                            <td>Missing or blurred</td></tr>
+    <tr><td>Lighting</td>          <td>Computed; lamps can be changed</td>                    <td>Captured in the texture</td>                          <td>Captured with the scene</td></tr>
+    <tr><td>Editing</td>           <td>Move, swap or resize any object</td>                   <td>Needs cleanup and re-topology</td>                    <td>Limited</td></tr>
+    <tr><td>Capture</td>           <td>A few photos plus measurements; modelled in code</td>  <td>Many overlapping photos or a scanner; automatic</td>  <td>Many overlapping photos; automatic</td></tr>
+    <tr><td>As-found detail</td>   <td>Only what is modelled</td>                             <td>High, including clutter</td>                          <td>High, including clutter</td></tr>
+  </table></div>
+</section>
+
+
+
+<!-- ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  EDIT ▸ MATERIALS: TEXT, CAPTIONS, TABLE  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ -->
+<section>
+  <div class="eyebrow">Materials</div>
+
+  <h2>Surfaces without image files</h2>
+
+  <p>Most surfaces are a plain colour with tuned roughness. Three are procedural: computed from position by a small node graph.</p>
+
+  <div class="sw">
+    <figure><img src="img/sw_oak.jpg" alt="Procedural oak" loading="lazy">
+      <figcaption class="cap">Oak · rings, fibres, pores · each board gets its own offset</figcaption></figure>
+    <figure><img src="img/sw_tiles.jpg" alt="Procedural stone tiles" loading="lazy">
+      <figcaption class="cap">Bluestone · 60 cm grid in world space · per-tile variation</figcaption></figure>
+    <figure><img src="img/sw_rug.jpg" alt="Rug strands" loading="lazy">
+      <figcaption class="cap">Rug · 60,000 wool strands as geometry</figcaption></figure>
+  </div>
+
+  <div class="tbl"><table>
+    <tr><th></th>                    <th>Procedural</th>                               <th>Image texture</th></tr>
+    <tr><td>Resolution</td>          <td>Computed per pixel at any distance</td>       <td>Fixed by the image size</td></tr>
+    <tr><td>Storage</td>             <td>A node graph; no files</td>                   <td>Several image files per material</td></tr>
+    <tr><td>Repetition</td>          <td>Seeded per object or per tile</td>            <td>Repeats unless every surface gets its own image</td></tr>
+    <tr><td>Changes</td>             <td>Edit a parameter; applies everywhere</td>     <td>Repaint or re-shoot</td></tr>
+    <tr><td>UV mapping</td>          <td>Not needed</td>                               <td>Needed per object</td></tr>
+    <tr><td>Real-world detail</td>   <td>Only what the graph describes</td>            <td>Carries real stains, wear and print</td></tr>
+  </table></div>
+
+  <div class="cap">Scene file: 15.7 MB including all geometry. Image textures in the file: 0.</div>
+</section>
+
+
+
+<!-- ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  EDIT ▸ FOOTER  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ -->
+<footer>
+  <img src="img/icon.png" alt="">
+  <span>OFF-KILTER</span>
+</footer>
+
+</div>
+
+
+<script>
+(function () {
+
+  /* ▓▓▓▓▓▓▓▓▓▓  EDIT ▸ VIEW NAMES (the second word in each pair is the label under a thumbnail)  ▓▓▓▓▓▓▓▓▓▓ */
+  var views = [
+    ["22", "Window"],
+    ["19", "Kitchen"],
+    ["20", "Door wall"],
+    ["21", "TV wall"],
+    ["23", "Dining"],
+    ["24", "Dining + kitchen"],
+    ["25", "Table"]
+  ];
+  /* ▓▓▓▓▓▓▓▓▓▓  EDIT ▸ LAYER NAMES (shown in the corners of the big image)  ▓▓▓▓▓▓▓▓▓▓ */
+  var labels = { photo: "Photo", render: "Render", wire: "Wireframe" };
+
+  /* ───────── nothing to edit below this line ───────── */
+  var state = { view: "22", l: "photo", r: "render" };
+  var cmp = document.getElementById("cmp"), rng = document.getElementById("cmpRange");
+  var imgL = document.getElementById("imgL"), imgR = document.getElementById("imgR");
+  function press(group, on) { Array.prototype.forEach.call(group, function (c) { c.setAttribute("aria-pressed", c === on ? "true" : "false"); }); }
+  function draw() {
+    imgL.src = "img/" + state.l + "_" + state.view + ".jpg";
+    imgR.src = "img/" + state.r + "_" + state.view + ".jpg";
+    document.getElementById("tagL").textContent = labels[state.l];
+    document.getElementById("tagR").textContent = labels[state.r];
+  }
+  var vb = document.getElementById("views");
+  views.forEach(function (v) {
+    var b = document.createElement("button");
+    b.className = "th";
+    var im = document.createElement("img"); im.src = "img/photo_" + v[0] + ".jpg"; im.alt = "";
+    var sp = document.createElement("span"); sp.textContent = v[1];
+    b.appendChild(im); b.appendChild(sp); b.setAttribute("aria-label", v[1] + " view");
+    b.setAttribute("aria-pressed", v[0] === state.view ? "true" : "false");
+    b.addEventListener("click", function () { state.view = v[0]; press(vb.children, b); draw(); });
+    vb.appendChild(b);
+  });
+  var modes = document.querySelectorAll("[data-mode]");
+  Array.prototype.forEach.call(modes, function (b) {
+    b.addEventListener("click", function () {
+      var m = b.getAttribute("data-mode").split(","); state.l = m[0]; state.r = m[1];
+      press(modes, b); draw();
+    });
+  });
+  rng.addEventListener("input", function () { cmp.style.setProperty("--p", rng.value + "%"); });
+  var meshImg = document.getElementById("meshImg"), meshes = document.querySelectorAll("[data-mesh]");
+  Array.prototype.forEach.call(meshes, function (b) {
+    b.addEventListener("click", function () { meshImg.src = "img/" + b.getAttribute("data-mesh") + ".jpg"; press(meshes, b); });
+  });
+})();
+</script>
+
+
+<style>
+@font-face { font-family: "Rugen"; font-display: swap; src: url(data:font/otf;base64,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/+gAFf/RABb/5QAX/94AGf/nABr/6AAb/84AHP/rAB3/2QAJABT/5wAV/98AFv/kABf/4AAY/+oAGv/nABv/2gAc/+kAHf/gAAkAFP/mABX/1wAW/+YAF//kABj/6QAZ/+kAG//VABz/6QAd/+MACQAU/9QAFf/xABb/0wAX/9cAGP/MABn/6wAa/9QAHP/SAB3/3wAJABT/5QAV/9cAFv/mABf/4QAY/+oAGf/mABr/5QAb/9QAHf/fAAkAFP/vABX/2AAW/98AF//gABj/6AAZ//AAGv/vABv/1QAc/+UAHgAF/+8ABv/IAAv/yAAM/9QADv/IACH/xgAk/9IAKP/SACv/4wAw/9IAMv/SADT/1AA1/5EANv/PADf/lAA4/54AOv+GAD3/xQBC/9IARv/SAEn/3wBO/9IAUP/SAFL/3ABT/5EAVP/PAFX/lABW/54AWP+GAFr/0AAYAAX/5QAG//MAC//zAAz/+QAN/9gADv/sABP/0wAh/9YAIv/sADX/8gA3/80AOP/aADn/5QA6/74APf/RAD7/9QBA/+wAU//yAFX/zQBW/9oAV//lAFj/vgBa/+oAXP/pABMABf/rAAz/+wAN/9UAE//RACH/6QAi/9gAN//YADj/5wA5/9gAOv/IAD3/0QA+//YAQP/YAFX/2ABW/+cAV//YAFj/yABa/+oAXP/pABUABf/pAA3/0wAO//kAE//RACH/4wAi/9IANf/7ADf/0gA4/+EAOf/SADr/wgA9/9EAPv/2AED/0gBT//sAVf/SAFb/4QBX/9IAWP/CAFr/+gBc/+UACwAF/+8ADP/zAA3/3QAT/9wAIf/ZAD3/3AA+//EASf/5AFL/+wBa/+0AXP/lAAwADP/yAA3/6gAQ/+AAE//PACH/9AAi/7IAK//oAD7/+wBA/7IASf/gAFr/2wBc//AAFAAF/+kABv/yAAv/8gAM//gADf/bAA7/7wAT/+MAIf/aADX/8gA3/8oAOP/ZADr/uQA9/9EAPv/zAFP/8gBV/8oAVv/ZAFj/uQBa//EAXP/nAA0ABf/wAAz/9wAN/9gAE//RACH/5AAi/9AAOf/7AD3/4AA+//IAQP/QAFf/+wBa//AAXP/mABMABf/wAAz/2AAO/+4AIf/NACT/zgAo/84AK//TADD/zQAy/80ANP/ZADb/8QBC/84ARv/OAEn/zQBO/80AUP/OAFL/2gBU//EAWv/TAB0ABf/nAAb/rwAL/68ADP/oAA3/+QAO/68AIf+4ACT/+QAo//kAMP/5ADL/+QA1/3YANv/1ADf/egA4/4YAOv9uAD3/uwA+//UAQv/5AEb/+QBO//kAUP/5AFP/dgBU//UAVf96AFb/hgBY/24AWv/JAFz/8wATAAX/8wAN/9YAEP/WABP/zgAh//YAIv+vADf/4gA4//AAOf/SADr/0gA9/9EAPv/6AED/rwBV/+IAVv/wAFf/0gBY/9IAWv/7AFz/5wAYAAX/6gAG//gAC//4AAz/8AAN//EADv/0ACH/3gAr/+wANf/3ADb/+AA3/88AOP/dADr/vwA9/9AAPv/vAEn/5gBS//cAU//3AFT/+ABV/88AVv/dAFj/vwBa/+gAXP/rABQABf/oAAz/+AAN/9cADv/3ABP/0gAh/+MAIv/oADf/0wA4/+EAOf/iADr/wwA9/9EAPv/1AED/6ABV/9MAVv/hAFf/4gBY/8MAWv/oAFz/6QASAAz/7wAN//kAEP/GABP/xQAi/5EAJP/7ACj/+wAr/5cAMP/7ADL/+wBA/5EAQv/7AEb/+wBJ/4IATv/7AFD/+wBa/9AAXP/0AA0ABf/xAAz/9wAN/9gAE//RACH/5AAi/88AOf/7AD3/4AA+//IAQP/PAFf/+wBa//AAXP/nABUADP/UABD/yAAT/8UAHv/UAB//1AAh/9AAIv+UACT/0gAo/9IAK/+dADD/0gAy/9IANP/nAED/lABC/9IARv/SAEn/iQBO/9IAUP/SAFL/4ABa/9AAFgAM/9oAEP/PABP/yQAe/+QAH//kACH/3AAi/54AJP/hACj/4QAr/6oAMP/hADL/4QA0//MAPv/7AED/ngBC/+EARv/hAEn/mgBO/+EAUP/hAFL/7ABa/9QAFAAF//oADP/aAA7/+AAh/88AJP/SACj/0gAr/9MAMP/SADL/0gA0/98ANv/7AD7/+gBC/9IARv/SAEn/zABO/9IAUP/SAFL/3wBU//sAWv/UABUADP/PABD/vwAT/8EAHv/OAB//zQAh/8oAIv+GACT/wgAo/8IAK/+OADD/wgAy/8IANP/ZAED/hgBC/8IARv/CAEn/egBO/8IAUP/CAFL/0gBa/8sACwAF//kADP/wAA3/5gAT/+wAIf/pACv/+QA9/+wAPv/5AEn/9ABa/9sAXP/xABMABf/vAAb/yAAL/8gADP/UAA7/yAAh/8YAPf/FAEL/0gBG/9IASf/fAE7/0gBQ/9IAUv/cAFP/kQBU/88AVf+UAFb/ngBY/4YAWv/QABIABf/lAAb/8wAL//MADP/5AA3/2AAO/+wAE//TACH/1gA9/9EAPv/1AED/6wBT//IAVf/NAFb/2gBX/+UAWP++AFr/6gBc/+kADgAF/+oADP/7AA3/1QAT/9EAIf/pAD3/0QA+//YAQP/YAFX/2ABW/+YAV//YAFj/yABa/+oAXP/pAA8ABf/pAA3/0wAO//kAE//RACH/4wA9/9EAPv/2AED/0gBT//sAVf/SAFb/4QBX/9IAWP/CAFr/+gBc/+UACgAM//IADf/qABD/4AAT/88AIf/0AD7/+wBA/7IASf/gAFr/2wBc//AAEAAF/+kABv/yAAv/8gAM//gADf/bAA7/7wAT/+MAIf/aAD3/0QA+//MAU//yAFX/ygBW/9kAWP+5AFr/8QBc/+cACwAF//AADP/3AA3/2AAT/9EAIf/kAD3/4AA+//IAQP/QAFf/+wBa//AAXP/mAAsADP/aACH/zwA+//gAQv/UAEb/1ABJ/80ATv/UAFD/1ABS/+EAWv/VAFz/+wAUAAX/5wAG/68AC/+vAAz/6AAN//kADv+vACH/uAA9/7sAPv/1AEL/+QBG//kATv/5AFD/+QBT/3YAVP/1AFX/egBW/4YAWP9uAFr/yQBc//MADgAF//MADf/WABD/1gAT/84AIf/2AD3/0QA+//oAQP+vAFX/4gBW//AAV//SAFj/0gBa//sAXP/nABIABf/qAAb/+AAL//gADP/wAA3/8QAO//QAIf/eAD3/0AA+/+8ASf/mAFL/9wBT//cAVP/4AFX/zwBW/90AWP+/AFr/6ABc/+sAEAAF/+cADP/3AA3/1gAO//YAE//SACH/4gA9/9EAPv/0AED/5wBT//sAVf/SAFb/4ABX/+EAWP/CAFr/5wBc/+gADAAM/+8ADf/5ABD/xgAT/8UAQP+RAEL/+wBG//sASf+CAE7/+wBQ//sAWv/QAFz/9AALAAX/8QAM//cADf/YABP/0QAh/+QAPf/gAD7/8gBA/88AV//7AFr/8ABc/+cADgAM/9QAEP/IABP/xQAe/9QAH//UACH/0ABA/5QAQv/SAEb/0gBJ/4kATv/SAFD/0gBS/+AAWv/QAA8ADP/aABD/zwAT/8kAHv/kAB//5AAh/9wAPv/7AED/ngBC/+EARv/hAEn/mgBO/+EAUP/hAFL/7ABa/9QADQAF//oADP/aAA7/+AAh/88APv/6AEL/0gBG/9IASf/MAE7/0gBQ/9IAUv/fAFT/+wBa/9QADgAM/88AEP+/ABP/wQAe/84AH//NACH/ygBA/4YAQv/CAEb/wgBJ/3oATv/CAFD/wgBS/9IAWv/LAAoABf/5AAz/8AAN/+YAE//sACH/6QA9/+wAPv/5AEn/9ABa/9sAXP/xAAIACAAUABQAAAAWAB0AAQAiACgACQArAC0AEAAwADsAEwBAAEYAHwBJAEsAJgBOAFkAKQAAAAEAAAAKAAwADgAAAAAAAAAAAAEAAAAA) format("opentype"); }
+</style>
+
+</body></html>
